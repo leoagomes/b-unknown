@@ -41,6 +41,12 @@ endif()
 add_executable(BUnknown src/main.cc)
 target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT)
 
+if (APPLE)
+    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
+    target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
+    target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+endif()
+
 add_custom_command(TARGET BUnknown POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/data"

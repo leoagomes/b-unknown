@@ -189,4 +189,5 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,cmake,c++,windows,linux,macos,c
 
 build/
+build-*/
 .cache/

@@ -47,9 +47,7 @@ target_include_directories(BUnknown PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT)
 
 if (APPLE)
-    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
-    target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
-    target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+    target_link_libraries(${PROJECT_NAME} PRIVATE "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
 endif()
 
 add_custom_command(TARGET BUnknown POST_BUILD

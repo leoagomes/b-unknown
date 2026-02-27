@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.28)
 
 project(BUnknown)
 
@@ -13,6 +13,7 @@ endif()
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
 add_subdirectory(vendor/raylib)
+add_subdirectory(vendor/entt)
 
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui")
 add_library(imgui STATIC
@@ -38,7 +39,7 @@ if(NOT EXISTS "${RLIMGUI_DIR}/extras/FA6FreeSolidFontData.h")
 endif()
 
 add_executable(BUnknown src/main.cc)
-target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui)
+target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT)
 
 add_custom_command(TARGET BUnknown POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

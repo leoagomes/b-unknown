@@ -14,6 +14,7 @@ void update_draw_frame() {
 int main() {
     const int width = 800;
     const int height = 600;
+
     InitWindow(width, height, "BUnknown");
 
     SetTargetFPS(60);

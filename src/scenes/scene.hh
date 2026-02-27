@@ -2,9 +2,9 @@
 
 namespace scenes {
 
-class Scene {
+class scene {
 public:
-    virtual ~Scene() = default;
+    virtual ~scene() = default;
     virtual void update(float dt) = 0;
     virtual void draw() = 0;
 };

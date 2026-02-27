@@ -15,6 +15,19 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
 add_subdirectory(vendor/raylib)
 add_subdirectory(vendor/entt)
 
+if(APPLE)
+    add_subdirectory(vendor/pstld)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    add_library(Threads::Threads INTERFACE IMPORTED)
+    target_compile_options(Threads::Threads INTERFACE -pthread)
+    target_link_options(Threads::Threads INTERFACE -pthread)
+else()
+    find_package(Threads REQUIRED)
+endif()
+
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui")
 add_library(imgui STATIC
     "${IMGUI_DIR}/imgui.cpp"
@@ -44,10 +57,11 @@ file(GLOB_RECURSE BUNKNOWN_SOURCES CONFIGURE_DEPENDS
 
 add_executable(BUnknown ${BUNKNOWN_SOURCES})
 target_include_directories(BUnknown PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT)
+target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT Threads::Threads)
 
-if (APPLE)
-    target_link_libraries(${PROJECT_NAME} PRIVATE "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE pstld "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
+    target_include_directories(BUnknown PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/pstld")
 endif()
 
 add_custom_command(TARGET BUnknown POST_BUILD

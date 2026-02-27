@@ -7,3 +7,6 @@
 [submodule "vendor/entt"]
 	path = vendor/entt
 	url = git@github.com:skypjack/entt.git
+[submodule "vendor/pstld"]
+	path = vendor/pstld
+	url = git@github.com:mikekazakov/pstld.git

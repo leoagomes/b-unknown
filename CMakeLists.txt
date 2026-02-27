@@ -38,7 +38,12 @@ if(NOT EXISTS "${RLIMGUI_DIR}/extras/FA6FreeSolidFontData.h")
     target_compile_definitions(rlImGui PRIVATE NO_FONT_AWESOME)
 endif()
 
-add_executable(BUnknown src/main.cc)
+file(GLOB_RECURSE BUNKNOWN_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc"
+)
+
+add_executable(BUnknown ${BUNKNOWN_SOURCES})
+target_include_directories(BUnknown PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT)
 
 if (APPLE)

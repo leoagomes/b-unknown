@@ -7,6 +7,11 @@
 
 namespace resources {
 
+struct image {
+    std::string path;
+    Image img;
+};
+
 struct texture {
     Texture2D tex2d;
     std::string path;

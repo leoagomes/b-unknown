@@ -39,3 +39,9 @@ endif()
 
 add_executable(BUnknown src/main.cc)
 target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui)
+
+add_custom_command(TARGET BUnknown POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/data"
+        "$<TARGET_FILE_DIR:BUnknown>/data"
+)

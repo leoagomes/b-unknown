@@ -32,8 +32,16 @@ struct sprite {
 };
 
 struct font {
-    Font font;
+    Font fnt;
     std::string path;
+
+    font(const std::string &path) : path(path) {
+        fnt = LoadFontEx(path.c_str(), 32, nullptr, 0);
+    }
+
+    ~font() {
+        UnloadFont(fnt);
+    }
 };
 
 struct texture_loader {
@@ -49,6 +57,14 @@ struct sprite_loader {
 
     result_type operator()(entt::resource<texture> tex, const Rectangle &source) const {
         return std::make_shared<sprite>(tex, source);
+    }
+};
+
+struct font_loader {
+    using result_type = std::shared_ptr<font>;
+
+    result_type operator()(const std::string &path) const {
+        return std::make_shared<font>(path);
     }
 };
 

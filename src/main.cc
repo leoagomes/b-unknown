@@ -6,17 +6,17 @@
 #include "raylib.h"
 
 #include "state.hh"
-#include "scenes/scene.hh"
-#include "scenes/boot.hh"
+#include "scene/base.hh"
+#include "scene/boot.hh"
 
 std::shared_ptr<state::shared_resources> shared_resources;
-std::shared_ptr<scenes::scene> scene;
+std::shared_ptr<scene::base> scene;
 
 void update_draw_frame();
 
 int main() {
     shared_resources = std::make_shared<state::shared_resources>();
-    scene = std::make_shared<scenes::boot>(shared_resources);
+    scene = std::make_shared<scene::boot>(shared_resources);
 
     const int width = 800;
     const int height = 600;

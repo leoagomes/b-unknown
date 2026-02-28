@@ -5,9 +5,9 @@
 #include "entt/entt.hpp"
 #include "raylib.h"
 
-#include "resources/textures.hh"
+#include "resource/texture.hh"
 
-namespace resources {
+namespace resource {
 
 struct sprite {
     entt::resource<texture> tex;

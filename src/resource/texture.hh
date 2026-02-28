@@ -5,7 +5,7 @@
 #include "entt/entt.hpp"
 #include "raylib.h"
 
-namespace resources {
+namespace resource {
 
 struct texture {
     Texture2D tex2d;

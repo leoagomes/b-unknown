@@ -1,6 +1,8 @@
-#include "scenes/boot.hh"
+#include "scene/boot.hh"
 
-namespace scenes {
+#include "colors.hh"
+
+namespace scene {
 
 boot::boot(std::shared_ptr<state::shared_resources> shared_resources)
     : shared_resources(shared_resources) {
@@ -24,7 +26,7 @@ void boot::draw_cube(Vector3 position, float rotation) {
     EndMode3D();
 }
 
-void boot::init() {
+void boot::initialize() {
     boot_state = boot_state::initializing;
     render_texture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
     total_delta = 0.0f;
@@ -37,16 +39,16 @@ void boot::init() {
     };
     // load the boot font
     shared_resources->font_cache.load(
-        resources::fonts::dungeon_mode,
+        resource::fonts::dungeon_mode,
         "dungeon-mode", 32);
     shared_resources->font_cache.load(
-        resources::fonts::monogram,
+        resource::fonts::monogram,
         "monogram", 32);
     // load the crt shader
     shared_resources->shader_cache.load(
-        resources::shaders::crt,
+        resource::shaders::crt,
         "crt");
-    auto crt_shader = shared_resources->shader_cache[resources::shaders::crt];
+    auto crt_shader = shared_resources->shader_cache[resource::shaders::crt];
     resolution_location = GetShaderLocation(crt_shader->shdr, "resolution");
     curvature_location = GetShaderLocation(crt_shader->shdr, "curvature");
     float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
@@ -88,7 +90,7 @@ void boot::draw() {
             break;
     }
 
-    auto crt_shader = shared_resources->shader_cache[resources::shaders::crt];
+    auto crt_shader = shared_resources->shader_cache[resource::shaders::crt];
     BeginDrawing();
         ClearBackground(colors::black);
         BeginShaderMode(crt_shader->shdr);
@@ -99,7 +101,7 @@ void boot::draw() {
 
 void boot::draw_loading() {
     auto font =
-        shared_resources->font_cache[resources::fonts::monogram];
+        shared_resources->font_cache[resource::fonts::monogram];
 
     auto width = GetScreenWidth();
     auto height = GetScreenHeight();
@@ -134,7 +136,7 @@ void boot::draw_loading() {
 
 void boot::draw_loaded() {
     auto font =
-        shared_resources->font_cache[resources::fonts::monogram];
+        shared_resources->font_cache[resource::fonts::monogram];
 
     auto width = GetScreenWidth();
     auto height = GetScreenHeight();

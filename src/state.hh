@@ -1,21 +1,27 @@
 #pragma once
 
+#include <memory>
+
 #include "entt/entt.hpp"
 
-#include "resources/images.hh"
-#include "resources/textures.hh"
-#include "resources/sprites.hh"
-#include "resources/fonts.hh"
-#include "resources/shaders.hh"
+#include "resource/image.hh"
+#include "resource/texture.hh"
+#include "resource/sprite.hh"
+#include "resource/font.hh"
+#include "resource/shader.hh"
+
+#include "shaders/crt.hh"
 
 namespace state {
 
 struct shared_resources {
-    resources::image_cache image_cache;
-    resources::texture_cache tex_cache;
-    resources::sprite_cache sprite_cache;
-    resources::font_cache font_cache;
-    resources::shader_cache shader_cache;
+    resource::image_cache image_cache;
+    resource::texture_cache tex_cache;
+    resource::sprite_cache sprite_cache;
+    resource::font_cache font_cache;
+    resource::shader_cache shader_cache;
+
+    std::shared_ptr<shaders::crt> crt_shader = nullptr;
 };
 
 };

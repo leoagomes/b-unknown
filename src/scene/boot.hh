@@ -6,13 +6,12 @@
 #include "raylib.h"
 #include "rlgl.h"
 
-#include "scenes/scene.hh"
+#include "scene/base.hh"
 #include "state.hh"
-#include "colors.hh"
 
-namespace scenes {
+namespace scene {
 
-class boot : public scene {
+class boot : public base {
 private:
     std::shared_ptr<state::shared_resources> shared_resources;
     RenderTexture render_texture;
@@ -44,7 +43,7 @@ public:
     boot(std::shared_ptr<state::shared_resources> shared_resources);
     ~boot();
 
-    void init() override;
+    void initialize() override;
     void update(float dt) override;
     void draw() override;
 };

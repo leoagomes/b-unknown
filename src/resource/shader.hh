@@ -11,7 +11,7 @@
 #define GLSL_VERSION 100
 #endif
 
-namespace resources {
+namespace resource {
 
 struct shader {
     std::string name;

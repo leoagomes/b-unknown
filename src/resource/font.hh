@@ -5,7 +5,7 @@
 #include "entt/entt.hpp"
 #include "raylib.h"
 
-namespace resources {
+namespace resource {
 
 struct font {
     Font fnt;

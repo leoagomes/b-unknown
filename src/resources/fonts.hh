@@ -9,10 +9,10 @@ namespace resources {
 
 struct font {
     Font fnt;
-    std::string path;
+    std::string name;
 
-    font(const std::string &path) : path(path) {
-        fnt = LoadFontEx(path.c_str(), 32, nullptr, 0);
+    font(const std::string &name) : name(name) {
+        fnt = LoadFontEx(name.c_str(), 32, nullptr, 0);
     }
 
     ~font() {

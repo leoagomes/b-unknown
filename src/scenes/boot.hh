@@ -15,9 +15,13 @@ namespace scenes {
 class boot : public scene {
 public:
     std::shared_ptr<state::shared_resources> shared_resources;
+    RenderTexture render_texture;
 
     float total_delta = 0.0f;
     Camera camera;
+
+    int resolution_location;
+    int curvature_location;
 
     boot(std::shared_ptr<state::shared_resources> shared_resources)
         : shared_resources(shared_resources) {
@@ -27,6 +31,7 @@ public:
     }
 
     void init() override {
+        render_texture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
         total_delta = 0.0f;
         camera = Camera{
             Vector3{0.0f, 0.0f, 10.0f},
@@ -46,6 +51,13 @@ public:
         shared_resources->shader_cache.load(
             resources::shaders::crt,
             "crt");
+        auto crt_shader = shared_resources->shader_cache[resources::shaders::crt];
+        resolution_location = GetShaderLocation(crt_shader->shdr, "resolution");
+        curvature_location = GetShaderLocation(crt_shader->shdr, "curvature");
+        float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
+        SetShaderValue(crt_shader->shdr, resolution_location, resolution, SHADER_UNIFORM_VEC2);
+        float curvature = 0.05f;
+        SetShaderValue(crt_shader->shdr, curvature_location, &curvature, SHADER_UNIFORM_FLOAT);
     }
 
     void update(float dt) override {
@@ -69,7 +81,7 @@ public:
             20
         };
 
-        BeginDrawing();
+        BeginTextureMode(render_texture);
             ClearBackground(colors::black);
             draw_cube();
             font->draw_text(
@@ -84,6 +96,14 @@ public:
                 font_size,
                 font_spacing,
                 colors::white);
+        EndTextureMode();
+
+        auto crt_shader = shared_resources->shader_cache[resources::shaders::crt];
+        BeginDrawing();
+            ClearBackground(colors::black);
+            BeginShaderMode(crt_shader->shdr);
+                DrawTextureRec(render_texture.texture, Rectangle{0, 0, (float)render_texture.texture.width, (float)-render_texture.texture.height}, Vector2{0, 0}, colors::white);
+            EndShaderMode();
         EndDrawing();
     }
 

@@ -37,12 +37,15 @@ public:
         };
         // load the boot font
         shared_resources->font_cache.load(
-            entt::hashed_string{"dungeon-mode"},
-            "data/fonts/dungeon-mode.ttf");
+            resources::fonts::dungeon_mode,
+            "dungeon-mode", 32);
         shared_resources->font_cache.load(
-            entt::hashed_string{"monogram"},
-            "data/fonts/monogram.ttf");
+            resources::fonts::monogram,
+            "monogram", 32);
         // load the crt shader
+        shared_resources->shader_cache.load(
+            resources::shaders::crt,
+            "crt");
     }
 
     void update(float dt) override {
@@ -51,7 +54,7 @@ public:
 
     void draw() override {
         auto font =
-            shared_resources->font_cache[entt::hashed_string{"monogram"}];
+            shared_resources->font_cache[resources::fonts::monogram];
 
         auto width = GetScreenWidth();
         auto height = GetScreenHeight();

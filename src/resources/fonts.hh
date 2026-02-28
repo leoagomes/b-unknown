@@ -11,8 +11,9 @@ struct font {
     Font fnt;
     std::string name;
 
-    font(const std::string &name) : name(name) {
-        fnt = LoadFontEx(name.c_str(), 32, nullptr, 0);
+    font(const std::string &name, int font_size) : name(name) {
+        const auto path = TextFormat("data/fonts/%s.ttf", name.c_str());
+        fnt = LoadFontEx(path, font_size, nullptr, 0);
     }
 
     ~font() {
@@ -21,6 +22,10 @@ struct font {
 
     void draw_text(const std::string &text, const Vector2 &position, float font_size, float spacing, const Color &color) const {
         DrawTextEx(fnt, text.c_str(), position, font_size, spacing, color);
+    }
+
+    void draw_text(const std::string &text, const Vector2 &position, const Color &color) const {
+        draw_text(text, position, fnt.baseSize, 0, color);
     }
 
     Vector2 measure_text(const std::string &text, float font_size, float spacing) const {
@@ -35,8 +40,8 @@ struct font {
 struct font_loader {
     using result_type = std::shared_ptr<font>;
 
-    result_type operator()(const std::string &path) const {
-        return std::make_shared<font>(path);
+    result_type operator()(const std::string &name, int font_size) const {
+        return std::make_shared<font>(name, font_size);
     }
 };
 

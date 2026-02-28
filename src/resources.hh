@@ -10,6 +10,18 @@ namespace resources {
 struct image {
     std::string path;
     Image img;
+
+    image(const std::string &path) : path(path) {
+        img = LoadImage(path.c_str());
+    }
+};
+
+struct image_loader {
+    using result_type = std::shared_ptr<image>;
+
+    result_type operator()(const std::string &path) const {
+        return std::make_shared<image>(path);
+    }
 };
 
 struct texture {
@@ -20,8 +32,20 @@ struct texture {
         tex2d = LoadTexture(path.c_str());
     }
 
+    texture(const Image &img) {
+        tex2d = LoadTextureFromImage(img);
+    }
+
     ~texture() {
         UnloadTexture(tex2d);
+    }
+};
+
+struct texture_loader {
+    using result_type = std::shared_ptr<texture>;
+
+    result_type operator()(const std::string &path) const {
+        return std::make_shared<texture>(path);
     }
 };
 
@@ -36,6 +60,14 @@ struct sprite {
     ~sprite() {}
 };
 
+struct sprite_loader {
+    using result_type = std::shared_ptr<sprite>;
+
+    result_type operator()(entt::resource<texture> tex, const Rectangle &source) const {
+        return std::make_shared<sprite>(tex, source);
+    }
+};
+
 struct font {
     Font fnt;
     std::string path;
@@ -47,21 +79,17 @@ struct font {
     ~font() {
         UnloadFont(fnt);
     }
-};
 
-struct texture_loader {
-    using result_type = std::shared_ptr<texture>;
-
-    result_type operator()(const std::string &path) const {
-        return std::make_shared<texture>(path);
+    void draw_text(const std::string &text, const Vector2 &position, float font_size, float spacing, const Color &color) const {
+        DrawTextEx(fnt, text.c_str(), position, font_size, spacing, color);
     }
-};
 
-struct sprite_loader {
-    using result_type = std::shared_ptr<sprite>;
+    Vector2 measure_text(const std::string &text, float font_size, float spacing) const {
+        return MeasureTextEx(fnt, text.c_str(), font_size, spacing);
+    }
 
-    result_type operator()(entt::resource<texture> tex, const Rectangle &source) const {
-        return std::make_shared<sprite>(tex, source);
+    Vector2 measure_text(const std::string &text) const {
+        return measure_text(text, fnt.baseSize, 0);
     }
 };
 

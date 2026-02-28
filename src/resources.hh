@@ -101,4 +101,25 @@ struct font_loader {
     }
 };
 
+struct shader {
+    std::string path;
+    Shader shdr;
+
+    shader(const std::string &path) : path(path) {
+        shdr = LoadShader(path.c_str(), path.c_str());
+    }
+
+    ~shader() {
+        UnloadShader(shdr);
+    }
+};
+
+struct shader_loader {
+    using result_type = std::shared_ptr<shader>;
+
+    result_type operator()(const std::string &path) const {
+        return std::make_shared<shader>(path);
+    }
+};
+
 };

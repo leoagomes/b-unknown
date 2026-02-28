@@ -22,6 +22,7 @@ int main() {
     const int height = 600;
 
     InitWindow(width, height, "BUnknown");
+    InitAudioDevice();
     SetTargetFPS(60);
 
     scene->init();
@@ -34,6 +35,7 @@ int main() {
     }
 #endif
 
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

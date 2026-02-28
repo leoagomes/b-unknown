@@ -2,15 +2,20 @@
 
 #include "entt/entt.hpp"
 
-#include "resources.hh"
+#include "resources/images.hh"
+#include "resources/textures.hh"
+#include "resources/sprites.hh"
+#include "resources/fonts.hh"
+#include "resources/shaders.hh"
 
 namespace state {
 
 struct shared_resources {
-    entt::resource_cache<resources::image, resources::image_loader> image_cache;
-    entt::resource_cache<resources::texture, resources::texture_loader> tex_cache;
-    entt::resource_cache<resources::sprite, resources::sprite_loader> sprite_cache;
-    entt::resource_cache<resources::font, resources::font_loader> font_cache;
+    resources::image_cache image_cache;
+    resources::texture_cache tex_cache;
+    resources::sprite_cache sprite_cache;
+    resources::font_cache font_cache;
+    resources::shader_cache shader_cache;
 };
 
 };

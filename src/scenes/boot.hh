@@ -42,6 +42,7 @@ public:
         shared_resources->font_cache.load(
             entt::hashed_string{"monogram"},
             "data/fonts/monogram.ttf");
+        // load the crt shader
     }
 
     void update(float dt) override {

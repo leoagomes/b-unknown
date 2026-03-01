@@ -2,8 +2,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "entt/entt.hpp"
-#include "raylib.h"
+#include <entt/entt.hpp>
+#include <raylib-cpp.hpp>
 
 #include "global.hh"
 #include "scene/manager.hh"
@@ -11,6 +11,7 @@
 
 global::shared_resources global::resources;
 scene::manager global::scene;
+std::unique_ptr<raylib::Window> window;
 
 void update_draw_frame();
 void load_crt_shader();
@@ -19,9 +20,9 @@ int main() {
     const int width = 800;
     const int height = 600;
 
-    InitWindow(width, height, "BUnknown");
+    window = std::make_unique<raylib::Window>(width, height, "BUnknown");
     InitAudioDevice();
-    SetTargetFPS(60);
+    window->SetTargetFPS(60);
 
     load_crt_shader();
 
@@ -31,18 +32,17 @@ int main() {
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(update_draw_frame, 60, 1);
 #else
-    while (!WindowShouldClose()) {
+    while (!window->ShouldClose()) {
         update_draw_frame();
     }
 #endif
 
     CloseAudioDevice();
-    CloseWindow();
     return 0;
 }
 
 void update_draw_frame() {
-    float dt = GetFrameTime();
+    float dt = window->GetFrameTime();
     global::scene.update_and_draw(dt);
 }
 

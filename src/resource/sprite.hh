@@ -2,18 +2,16 @@
 
 #include <memory>
 
-#include "entt/entt.hpp"
-#include "raylib.h"
-
-#include "resource/texture.hh"
+#include <entt/entt.hpp>
+#include <raylib-cpp.hpp>
 
 namespace resource {
 
 struct sprite {
-    entt::resource<texture> tex;
+    entt::resource<raylib::Texture> tex;
     Rectangle source;
 
-    sprite(entt::resource<texture> tex, const Rectangle &source)
+    sprite(entt::resource<raylib::Texture> tex, const Rectangle &source)
         : tex(tex), source(source) {
     }
 
@@ -23,7 +21,7 @@ struct sprite {
 struct sprite_loader {
     using result_type = std::shared_ptr<sprite>;
 
-    result_type operator()(entt::resource<texture> tex, const Rectangle &source) const {
+    result_type operator()(entt::resource<raylib::Texture> tex, const Rectangle &source) const {
         return std::make_shared<sprite>(tex, source);
     }
 };

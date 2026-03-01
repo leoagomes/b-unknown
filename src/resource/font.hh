@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "entt/entt.hpp"
+#include <entt/entt.hpp>
 #include <raylib-cpp.hpp>
 
 namespace resource {

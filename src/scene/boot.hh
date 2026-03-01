@@ -126,6 +126,17 @@ private:
             // This is partily what we're doing with the sprite atlases, they just
             // have special representations for images. The data below this comment,
             // however, need to be represented as a blob of bytes.
+            monogram_extended_font_data = LoadFileData("data/fonts/monogram-extended.ttf", nullptr);
+            progress.store(++current_progress);
+            monogram_extended_italic_font_data = LoadFileData("data/fonts/monogram-extended-italic.ttf", nullptr);
+            progress.store(++current_progress);
+            dungeon_mode_font_data = LoadFileData("data/fonts/dungeon-mode.ttf", nullptr);
+            progress.store(++current_progress);
+
+            done.store(true);
+        }
+
+        void load_gpu_assets() {
         }
     };
 

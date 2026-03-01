@@ -16,6 +16,8 @@ struct font {
         fnt = LoadFontEx(path, font_size, nullptr, 0);
     }
 
+    font(const std::string& name, Font fnt) : name(name), fnt(fnt) {}
+
     ~font() {
         UnloadFont(fnt);
     }

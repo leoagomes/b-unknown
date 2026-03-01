@@ -73,6 +73,62 @@ private:
         }
     };
 
+    // A wrapper for the parallel loading logic.
+    struct parallel_loader {
+        /* These are accessible from the main thread: */
+        // total number of assets to load
+        static constexpr int total_assets = 6;
+        // how many assets have been loaded
+        std::atomic<int> progress;
+        // whether the loading is done
+        std::atomic<bool> done;
+
+        std::thread thread;
+
+        // The parallel loader just loads this data into RAM, the main thread
+        // uses it to populate the structures.
+        unsigned char* dungeon_mode_font_data = nullptr;
+        unsigned char* monogram_extended_font_data = nullptr;
+        unsigned char* monogram_extended_italic_font_data = nullptr;
+
+        parallel_loader()
+            : progress(0),
+              done(false) {}
+
+        void load_cpu_assets() {
+            done.store(false);
+            progress.store(0);
+
+            // to simplify setting the progress, we use a local variable
+            int current_progress = 0;
+
+            // load the boot chime
+            global::resources.sound_cache.load(resource::sounds::boot_chime, "boot_chime");
+            progress.store(++current_progress);
+
+            // load the sprite atlases
+            auto& image_cache = global::resources.image_cache;
+            image_cache.load(resource::images::one_bit_input_pack, "1-bit-input-pack");
+            progress.store(++current_progress);
+            image_cache.load(resource::images::one_bit_pack, "1-bit-pack");
+            progress.store(++current_progress);
+            image_cache.load(resource::images::dungeon_mode, "dungeon-mode");
+            progress.store(++current_progress);
+            image_cache.load(resource::images::dungeon_437, "dungeon-437");
+            progress.store(++current_progress);
+            image_cache.load(resource::images::monogram, "monogram");
+            progress.store(++current_progress);
+
+            // GPU textures need to be loaded from the main thread, however, we can
+            // expedite the loading process by reading the data from disk into RAM.
+            // Then, we can load the textures from RAM, instead of from disk, saving
+            // time on the blocking loads.
+            // This is partily what we're doing with the sprite atlases, they just
+            // have special representations for images. The data below this comment,
+            // however, need to be represented as a blob of bytes.
+        }
+    };
+
     enum class boot_state {
         instantiate,      // the boot scene instance has just been instantiated
         load_core_assets, // loading core assets, required for boot scene display
@@ -109,36 +165,6 @@ private:
         font = ret.first->second;
     }
 
-    static void load_cpu_assets(std::atomic<int>& progress) {
-        static constexpr int total_assets = 6;
-        int current_progress = 0;
-
-        // load the boot chime
-        global::resources.sound_cache.load(resource::sounds::boot_chime, "boot_chime");
-        progress.store(++current_progress);
-
-        // load the sprite atlases
-        auto& image_cache = global::resources.image_cache;
-        image_cache.load(resource::images::one_bit_input_pack, "1-bit-input-pack");
-        progress.store(++current_progress);
-        image_cache.load(resource::images::one_bit_pack, "1-bit-pack");
-        progress.store(++current_progress);
-        image_cache.load(resource::images::dungeon_mode, "dungeon-mode");
-        progress.store(++current_progress);
-        image_cache.load(resource::images::dungeon_437, "dungeon-437");
-        progress.store(++current_progress);
-        image_cache.load(resource::images::monogram, "monogram");
-        progress.store(++current_progress);
-
-        // GPU textures need to be loaded from the main thread, however, we can
-        // expedite the loading process by reading the data from disk into RAM.
-        // Then, we can load the textures from RAM, instead of from disk, saving
-        // time on the blocking loads.
-        // This is partily what we're doing with the sprite atlases, they just
-        // have special representations for images. The data below this comment,
-        // however, need to be represented as a blob of bytes.
-    }
-
 public:
     boot()
         : cube(),
@@ -163,9 +189,9 @@ public:
         screen_height = GetScreenHeight();
 
         total_delta += dt;
-        if (this->boot_state == boot_state::loading) {
+        if (state == boot_state::loading) {
             if (total_delta > 1.0f) {
-                this->boot_state = boot_state::loaded;
+                state = boot_state::loaded;
                 if (IsAudioDeviceReady()) {
                     boot_sound = LoadSound("data/sounds/boot.wav");
                     if (boot_sound.frameCount > 0) {
@@ -175,7 +201,7 @@ public:
             }
         }
 
-        if (this->boot_state == boot_state::loaded) {
+        if (state == boot_state::loaded) {
             cube.position.z += dt * 20.0f;
         }
     }
@@ -189,7 +215,7 @@ public:
 
         BeginTextureMode(render_texture);
             ClearBackground(colors::black);
-            float scale = this->boot_state == boot_state::loaded ? 10.0f : 1.0f;
+            float scale = state == boot_state::loaded ? 10.0f : 1.0f;
             auto rotation = total_delta * 10.0f;
             cube.draw(rotation);
             // draw the heading
@@ -206,7 +232,7 @@ public:
                 font_spacing,
                 colors::white
             );
-            switch (this->boot_state) {
+            switch (state) {
                 case boot_state::loading: {
                     font->draw_text(
                         "Loading system...",

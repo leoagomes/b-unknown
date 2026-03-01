@@ -10,3 +10,6 @@
 [submodule "vendor/pstld"]
 	path = vendor/pstld
 	url = git@github.com:mikekazakov/pstld.git
+[submodule "vendor/raylib-cpp"]
+	path = vendor/raylib-cpp
+	url = git@github.com:RobLoach/raylib-cpp.git

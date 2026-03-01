@@ -158,7 +158,7 @@ private:
     RenderTexture render_texture;
     Sound boot_sound;
 
-    entt::resource<resource::font> font;
+    entt::resource<raylib::Font> font;
     static constexpr int font_size = 32;
     static constexpr int font_spacing = 0;
 
@@ -200,7 +200,7 @@ public:
         screen_height = GetScreenHeight();
 
         total_delta += dt;
-        if (state == boot_state::loading) {
+        if (state == boot_state::load_cpu_assets) {
             if (total_delta > 1.0f) {
                 state = boot_state::loaded;
                 if (IsAudioDeviceReady()) {
@@ -231,12 +231,12 @@ public:
             cube.draw(rotation);
             // draw the heading
             const char* heading_text = "OS II";
-            auto heading_length = font->measure_text(heading_text);
+            auto heading_length = font->MeasureText(heading_text, static_cast<float>(font->baseSize), font_spacing);
             auto heading_position = Vector2{
                 (screen_width - heading_length.x) / 2,
                 20
             };
-            font->draw_text(
+            font->DrawText(
                 heading_text,
                 heading_position,
                 font_size,
@@ -244,8 +244,8 @@ public:
                 colors::white
             );
             switch (state) {
-                case boot_state::loading: {
-                    font->draw_text(
+                case boot_state::load_cpu_assets: {
+                    font->DrawText(
                         "Loading system...",
                         Vector2{20, (float)height - 32 - 50},
                         font_size,
@@ -254,7 +254,7 @@ public:
                     break;
                 }
                 case boot_state::loaded: {
-                    font->draw_text(
+                    font->DrawText(
                         "Loaded",
                         Vector2{20, (float)height - 32 - 50},
                         font_size,

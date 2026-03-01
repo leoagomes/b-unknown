@@ -3,29 +3,24 @@
 #include <memory>
 
 #include "entt/entt.hpp"
-#include "raylib.h"
+#include <raylib-cpp.hpp>
 
 namespace resource {
 
-struct image {
-    std::string name;
-    Image img;
-
-    image(const std::string &name) : name(name) {
-        const auto path = TextFormat("data/images/%s.png", name.c_str());
-        img = LoadImage(path);
-    }
-};
-
 struct image_loader {
-    using result_type = std::shared_ptr<image>;
+    using result_type = std::shared_ptr<raylib::Image>;
 
-    result_type operator()(const std::string &path) const {
-        return std::make_shared<image>(path);
+    result_type operator()(const std::string& name) const {
+        const auto path = std::string("data/images/") + name + ".png";
+        return std::make_shared<raylib::Image>(path);
+    }
+
+    result_type operator()(const std::string& file_type, const unsigned char* file_data, int data_size) const {
+        return std::make_shared<raylib::Image>(file_type, file_data, data_size);
     }
 };
 
-typedef entt::resource_cache<image, image_loader> image_cache;
+typedef entt::resource_cache<raylib::Image, image_loader> image_cache;
 
 namespace images {
 

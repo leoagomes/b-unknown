@@ -3,35 +3,23 @@
 #include <memory>
 
 #include "entt/entt.hpp"
-#include "raylib.h"
+#include <raylib-cpp.hpp>
 
 namespace resource {
 
-struct texture {
-    Texture2D tex2d;
-    std::string path;
-
-    texture(const std::string &path) : path(path) {
-        tex2d = LoadTexture(path.c_str());
-    }
-
-    texture(const Image &img) {
-        tex2d = LoadTextureFromImage(img);
-    }
-
-    ~texture() {
-        UnloadTexture(tex2d);
-    }
-};
-
 struct texture_loader {
-    using result_type = std::shared_ptr<texture>;
+    using result_type = std::shared_ptr<raylib::Texture>;
 
-    result_type operator()(const std::string &path) const {
-        return std::make_shared<texture>(path);
+    result_type operator()(const std::string& path) const {
+        return std::make_shared<raylib::Texture>(path);
+    }
+
+    result_type operator()(const std::string& file_type, const unsigned char* file_data, int data_size) const {
+        raylib::Image image(file_type, file_data, data_size);
+        return std::make_shared<raylib::Texture>(image);
     }
 };
 
-typedef entt::resource_cache<texture, texture_loader> texture_cache;
+typedef entt::resource_cache<raylib::Texture, texture_loader> texture_cache;
 
 };

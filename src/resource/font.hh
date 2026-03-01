@@ -3,51 +3,36 @@
 #include <memory>
 
 #include "entt/entt.hpp"
-#include "raylib.h"
+#include <raylib-cpp.hpp>
 
 namespace resource {
 
-struct font {
-    Font fnt;
-    std::string name;
-
-    font(const std::string &name, int font_size) : name(name) {
-        const auto path = TextFormat("data/fonts/%s.ttf", name.c_str());
-        fnt = LoadFontEx(path, font_size, nullptr, 0);
-    }
-
-    font(const std::string& name, Font fnt) : name(name), fnt(fnt) {}
-
-    ~font() {
-        UnloadFont(fnt);
-    }
-
-    void draw_text(const std::string &text, const Vector2 &position, float font_size, float spacing, const Color &color) const {
-        DrawTextEx(fnt, text.c_str(), position, font_size, spacing, color);
-    }
-
-    void draw_text(const std::string &text, const Vector2 &position, const Color &color) const {
-        draw_text(text, position, fnt.baseSize, 0, color);
-    }
-
-    Vector2 measure_text(const std::string &text, float font_size, float spacing) const {
-        return MeasureTextEx(fnt, text.c_str(), font_size, spacing);
-    }
-
-    Vector2 measure_text(const std::string &text) const {
-        return measure_text(text, fnt.baseSize, 0);
-    }
-};
-
 struct font_loader {
-    using result_type = std::shared_ptr<font>;
+    using result_type = std::shared_ptr<raylib::Font>;
 
-    result_type operator()(const std::string &name, int font_size) const {
-        return std::make_shared<font>(name, font_size);
+    result_type operator()(const std::string& name, int font_size) const {
+        const auto path = std::string("data/fonts/") + name + ".ttf";
+        return std::make_shared<raylib::Font>(path, font_size);
+    }
+
+    result_type operator()(
+        const std::string& file_type,
+        const unsigned char* file_data,
+        int data_size,
+        int font_size,
+        int* font_chars = nullptr,
+        int chars_count = 0) const {
+        return std::make_shared<raylib::Font>(
+            file_type,
+            file_data,
+            data_size,
+            font_size,
+            font_chars,
+            chars_count);
     }
 };
 
-typedef entt::resource_cache<font, font_loader> font_cache;
+typedef entt::resource_cache<raylib::Font, font_loader> font_cache;
 
 namespace fonts {
 

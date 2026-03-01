@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <thread>
+#include <string>
 
 #include <entt/entt.hpp>
 #include <raylib.h>
@@ -77,7 +78,13 @@ private:
     struct parallel_loader {
         /* These are accessible from the main thread: */
         // total number of assets to load
-        static constexpr int total_assets = 6;
+        static constexpr int total_assets = 9;
+        static constexpr const char* boot_sound_name = "boot";
+        static constexpr const char* one_bit_input_pack_name = "1-bit-input-pack";
+        static constexpr const char* one_bit_pack_name = "1-bit-pack";
+        static constexpr const char* dungeon_mode_name = "dungeon-mode";
+        static constexpr const char* dungeon_437_name = "dungeon-437";
+        static constexpr const char* monogram_name = "monogram";
         // how many assets have been loaded
         std::atomic<int> progress;
         // whether the loading is done
@@ -88,12 +95,24 @@ private:
         // The parallel loader just loads this data into RAM, the main thread
         // uses it to populate the structures.
         unsigned char* dungeon_mode_font_data = nullptr;
+        int dungeon_mode_font_data_size = 0;
         unsigned char* monogram_extended_font_data = nullptr;
+        int monogram_extended_font_data_size = 0;
         unsigned char* monogram_extended_italic_font_data = nullptr;
+        int monogram_extended_italic_font_data_size = 0;
 
         parallel_loader()
             : progress(0),
               done(false) {}
+
+        ~parallel_loader() {
+            if (dungeon_mode_font_data)
+                UnloadFileData(dungeon_mode_font_data);
+            if (monogram_extended_font_data)
+                UnloadFileData(monogram_extended_font_data);
+            if (monogram_extended_italic_font_data)
+                UnloadFileData(monogram_extended_italic_font_data);
+        }
 
         void load_cpu_assets() {
             done.store(false);
@@ -103,20 +122,26 @@ private:
             int current_progress = 0;
 
             // load the boot chime
-            global::resources.sound_cache.load(resource::sounds::boot_chime, "boot_chime");
+            global::resources.sound_cache.load(
+                resource::sounds::boot_chime,
+                boot_sound_name
+            );
             progress.store(++current_progress);
 
             // load the sprite atlases
             auto& image_cache = global::resources.image_cache;
-            image_cache.load(resource::images::one_bit_input_pack, "1-bit-input-pack");
+            image_cache.load(
+                resource::images::one_bit_input_pack,
+                one_bit_input_pack_name
+            );
             progress.store(++current_progress);
-            image_cache.load(resource::images::one_bit_pack, "1-bit-pack");
+            image_cache.load(resource::images::one_bit_pack, one_bit_pack_name);
             progress.store(++current_progress);
-            image_cache.load(resource::images::dungeon_mode, "dungeon-mode");
+            image_cache.load(resource::images::dungeon_mode, dungeon_mode_name);
             progress.store(++current_progress);
-            image_cache.load(resource::images::dungeon_437, "dungeon-437");
+            image_cache.load(resource::images::dungeon_437, dungeon_437_name);
             progress.store(++current_progress);
-            image_cache.load(resource::images::monogram, "monogram");
+            image_cache.load(resource::images::monogram, monogram_name);
             progress.store(++current_progress);
 
             // GPU textures need to be loaded from the main thread, however, we can
@@ -126,17 +151,47 @@ private:
             // This is partily what we're doing with the sprite atlases, they just
             // have special representations for images. The data below this comment,
             // however, need to be represented as a blob of bytes.
-            monogram_extended_font_data = LoadFileData("data/fonts/monogram-extended.ttf", nullptr);
+            monogram_extended_font_data = LoadFileData(
+                "data/fonts/monogram-extended.ttf",
+                &monogram_extended_font_data_size
+            );
             progress.store(++current_progress);
-            monogram_extended_italic_font_data = LoadFileData("data/fonts/monogram-extended-italic.ttf", nullptr);
+            monogram_extended_italic_font_data = LoadFileData(
+                "data/fonts/monogram-extended-italic.ttf",
+                &monogram_extended_italic_font_data_size
+            );
             progress.store(++current_progress);
-            dungeon_mode_font_data = LoadFileData("data/fonts/dungeon-mode.ttf", nullptr);
+            dungeon_mode_font_data = LoadFileData(
+                "data/fonts/dungeon-mode.ttf",
+                &dungeon_mode_font_data_size
+            );
             progress.store(++current_progress);
 
             done.store(true);
         }
 
         void load_gpu_assets() {
+            auto& font_cache = global::resources.font_cache;
+            font_cache.load(
+                resource::fonts::monogram_extended,
+                "ttf", monogram_extended_font_data,
+                monogram_extended_font_data_size,
+                32
+            );
+            font_cache.load(
+                resource::fonts::monogram_extended_italic,
+                "ttf",
+                monogram_extended_italic_font_data,
+                monogram_extended_italic_font_data_size,
+                32
+            );
+            font_cache.load(
+                resource::fonts::dungeon_mode,
+                "ttf",
+                dungeon_mode_font_data,
+                dungeon_mode_font_data_size,
+                32
+            );
         }
     };
 
@@ -152,11 +207,12 @@ private:
     boot_state state;
     float total_delta;
 
-    std::thread cpu_load_thread;
-    std::atomic<int> cpu_load_progress;
+    parallel_loader loader;
 
     RenderTexture render_texture;
-    Sound boot_sound;
+    bool render_texture_loaded = false;
+    entt::resource<raylib::Sound> boot_chime;
+    bool played_boot_chime = false;
 
     entt::resource<raylib::Font> font;
     static constexpr int font_size = 32;
@@ -169,7 +225,12 @@ private:
         state = boot_state::load_core_assets;
 
         // load the core boot font
-        auto ret = global::resources.font_cache.load(resource::fonts::monogram, "monogram", 32);
+        auto ret =
+            global::resources.font_cache.load(
+                resource::fonts::monogram,
+                "monogram",
+                32
+            );
         if (!ret.second)
             throw std::runtime_error("Failed to load font: monogram");
         // store it so we don't need to access the cache
@@ -181,18 +242,24 @@ public:
         : cube(),
           state(boot_state::instantiate),
           total_delta(0.0f),
-          cpu_load_progress(0) {}
+          loader() {}
 
     ~boot() override {
-        UnloadSound(boot_sound);
-        UnloadRenderTexture(render_texture);
+        if (loader.thread.joinable())
+            loader.thread.join();
+        if (render_texture_loaded)
+            UnloadRenderTexture(render_texture);
     }
 
     void initialize() override {
         total_delta = 0.0f;
+        played_boot_chime = false;
         load_core_assets();
 
         render_texture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+        render_texture_loaded = true;
+        state = boot_state::load_cpu_assets;
+        loader.thread = std::thread([this]() { loader.load_cpu_assets(); });
     }
 
     void update(float dt) override {
@@ -201,15 +268,25 @@ public:
 
         total_delta += dt;
         if (state == boot_state::load_cpu_assets) {
-            if (total_delta > 1.0f) {
-                state = boot_state::loaded;
-                if (IsAudioDeviceReady()) {
-                    boot_sound = LoadSound("data/sounds/boot.wav");
-                    if (boot_sound.frameCount > 0) {
-                        PlaySound(boot_sound);
-                    }
-                }
+            if (loader.done.load()) {
+                if (loader.thread.joinable())
+                    loader.thread.join();
+                state = boot_state::load_gpu_assets;
             }
+        }
+
+        if (state == boot_state::load_gpu_assets) {
+            loader.load_gpu_assets();
+            boot_chime = global::resources.sound_cache[resource::sounds::boot_chime];
+            state = boot_state::loaded;
+            total_delta = 0.0f;
+        }
+
+        if (state == boot_state::loaded && !played_boot_chime) {
+            if (IsAudioDeviceReady() && boot_chime) {
+                boot_chime->Play();
+            }
+            played_boot_chime = true;
         }
 
         if (state == boot_state::loaded) {
@@ -218,9 +295,6 @@ public:
     }
 
     void draw() override {
-        auto font =
-            global::resources.font_cache[resource::fonts::monogram];
-
         auto width = GetScreenWidth();
         auto height = GetScreenHeight();
 
@@ -231,12 +305,16 @@ public:
             cube.draw(rotation);
             // draw the heading
             const char* heading_text = "OS II";
-            auto heading_length = font->MeasureText(heading_text, static_cast<float>(font->baseSize), font_spacing);
+            auto heading_length = this->font->MeasureText(
+                heading_text,
+                static_cast<float>(this->font->baseSize),
+                font_spacing
+            );
             auto heading_position = Vector2{
                 (screen_width - heading_length.x) / 2,
                 20
             };
-            font->DrawText(
+            this->font->DrawText(
                 heading_text,
                 heading_position,
                 font_size,
@@ -245,8 +323,30 @@ public:
             );
             switch (state) {
                 case boot_state::load_cpu_assets: {
-                    font->DrawText(
+                    this->font->DrawText(
                         "Loading system...",
+                        Vector2{20, (float)height - 32 - 50},
+                        font_size,
+                        font_spacing,
+                        colors::white);
+                    int progress = loader.progress.load();
+                    if (progress > parallel_loader::total_assets)
+                        progress = parallel_loader::total_assets;
+                    const std::string progress_text = "Progress: "
+                        + std::to_string(progress)
+                        + "/"
+                        + std::to_string(parallel_loader::total_assets);
+                    this->font->DrawText(
+                        progress_text.c_str(),
+                        Vector2{20, (float)height - 32 - 16},
+                        font_size,
+                        font_spacing,
+                        colors::white);
+                    break;
+                }
+                case boot_state::load_gpu_assets: {
+                    this->font->DrawText(
+                        "Uploading GPU assets...",
                         Vector2{20, (float)height - 32 - 50},
                         font_size,
                         font_spacing,
@@ -254,7 +354,7 @@ public:
                     break;
                 }
                 case boot_state::loaded: {
-                    font->DrawText(
+                    this->font->DrawText(
                         "Loaded",
                         Vector2{20, (float)height - 32 - 50},
                         font_size,

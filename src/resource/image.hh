@@ -11,7 +11,7 @@ struct image_loader {
     using result_type = std::shared_ptr<raylib::Image>;
 
     result_type operator()(const std::string& name) const {
-        const auto path = std::string("data/images/") + name + ".png";
+        const auto path = std::string("data/sprites/") + name + ".png";
         return std::make_shared<raylib::Image>(path);
     }
 

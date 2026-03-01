@@ -1,19 +1,15 @@
 #pragma once
 
-#include <memory>
-
 #include "entt/entt.hpp"
 #include "raylib.h"
 #include "rlgl.h"
 
 #include "scene/base.hh"
-#include "state.hh"
 
 namespace scene {
 
 class boot : public base {
 private:
-    std::shared_ptr<state::shared_resources> shared_resources;
     RenderTexture render_texture;
     Sound boot_sound = {};
     bool boot_sound_loaded = false;
@@ -40,7 +36,7 @@ private:
     void draw_loaded();
 
 public:
-    boot(std::shared_ptr<state::shared_resources> shared_resources);
+    boot() = default;
     ~boot();
 
     void initialize() override;

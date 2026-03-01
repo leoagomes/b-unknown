@@ -1,12 +1,9 @@
 #include "scene/boot.hh"
 
 #include "colors.hh"
+#include "global.hh"
 
 namespace scene {
-
-boot::boot(std::shared_ptr<state::shared_resources> shared_resources)
-    : shared_resources(shared_resources) {
-}
 
 boot::~boot() {
     if (boot_sound_loaded) {
@@ -38,23 +35,8 @@ void boot::initialize() {
         CAMERA_PERSPECTIVE
     };
     // load the boot font
-    shared_resources->font_cache.load(
-        resource::fonts::dungeon_mode,
-        "dungeon-mode", 32);
-    shared_resources->font_cache.load(
-        resource::fonts::monogram,
-        "monogram", 32);
-    // load the crt shader
-    shared_resources->shader_cache.load(
-        resource::shaders::crt,
-        "crt");
-    auto crt_shader = shared_resources->shader_cache[resource::shaders::crt];
-    resolution_location = GetShaderLocation(crt_shader->shdr, "resolution");
-    curvature_location = GetShaderLocation(crt_shader->shdr, "curvature");
-    float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
-    SetShaderValue(crt_shader->shdr, resolution_location, resolution, SHADER_UNIFORM_VEC2);
-    float curvature = 0.05f;
-    SetShaderValue(crt_shader->shdr, curvature_location, &curvature, SHADER_UNIFORM_FLOAT);
+    global::resources.font_cache.load(resource::fonts::dungeon_mode, "dungeon-mode", 32);
+    global::resources.font_cache.load(resource::fonts::monogram, "monogram", 32);
     boot_state = boot_state::loading;
 }
 
@@ -90,10 +72,10 @@ void boot::draw() {
             break;
     }
 
-    auto crt_shader = shared_resources->shader_cache[resource::shaders::crt];
+    auto crt_shader = global::resources.crt_shader;
     BeginDrawing();
         ClearBackground(colors::black);
-        BeginShaderMode(crt_shader->shdr);
+        BeginShaderMode(crt_shader->shader);
             DrawTextureRec(render_texture.texture, Rectangle{0, 0, (float)render_texture.texture.width, (float)-render_texture.texture.height}, Vector2{0, 0}, colors::white);
         EndShaderMode();
     EndDrawing();
@@ -101,7 +83,7 @@ void boot::draw() {
 
 void boot::draw_loading() {
     auto font =
-        shared_resources->font_cache[resource::fonts::monogram];
+        global::resources.font_cache[resource::fonts::monogram];
 
     auto width = GetScreenWidth();
     auto height = GetScreenHeight();
@@ -136,7 +118,7 @@ void boot::draw_loading() {
 
 void boot::draw_loaded() {
     auto font =
-        shared_resources->font_cache[resource::fonts::monogram];
+        global::resources.font_cache[resource::fonts::monogram];
 
     auto width = GetScreenWidth();
     auto height = GetScreenHeight();

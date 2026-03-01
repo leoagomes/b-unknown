@@ -2,6 +2,8 @@
 
 #include "raylib.h"
 
+#include "defs.hh"
+
 namespace shaders {
 
 struct crt {
@@ -18,7 +20,8 @@ public:
     Shader shader;
 
     crt() {
-        shader = LoadShader(nullptr, "data/shaders/crt.glsl");
+        const auto path = TextFormat("data/shaders/glsl-%d/crt.glsl", GLSL_VERSION);
+        shader = LoadShader(0, path);
         load_locations();
     }
 

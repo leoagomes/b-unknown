@@ -5,16 +5,15 @@
 #include "entt/entt.hpp"
 #include "raylib.h"
 
-#include "state.hh"
-#include "scene/base.hh"
+#include "global.hh"
 #include "scene/manager.hh"
 #include "scene/boot.hh"
 
-std::shared_ptr<state::shared_resources> shared_resources;
-
-scene::manager scene_manager;
+global::shared_resources global::resources;
+scene::manager global::scene;
 
 void update_draw_frame();
+void load_crt_shader();
 
 int main() {
     const int width = 800;
@@ -24,9 +23,10 @@ int main() {
     InitAudioDevice();
     SetTargetFPS(60);
 
-    shared_resources = std::make_shared<state::shared_resources>();
-    auto boot = std::make_shared<scene::boot>(shared_resources);
-    scene_manager.push(boot);
+    load_crt_shader();
+
+    auto boot = std::make_shared<scene::boot>();
+    global::scene.push(boot);
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(update_draw_frame, 60, 1);
@@ -43,5 +43,12 @@ int main() {
 
 void update_draw_frame() {
     float dt = GetFrameTime();
-    scene_manager.update_and_draw(dt);
+    global::scene.update_and_draw(dt);
+}
+
+void load_crt_shader() {
+    auto crt_shader = std::make_shared<shaders::crt>();
+    crt_shader->set_resolution(GetScreenWidth(), GetScreenHeight());
+    crt_shader->set_curvature(0.05f);
+    global::resources.crt_shader = crt_shader;
 }

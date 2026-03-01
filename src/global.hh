@@ -4,6 +4,8 @@
 
 #include "entt/entt.hpp"
 
+#include "scene/manager.hh"
+
 #include "resource/image.hh"
 #include "resource/texture.hh"
 #include "resource/sprite.hh"
@@ -12,7 +14,7 @@
 
 #include "shaders/crt.hh"
 
-namespace state {
+namespace global {
 
 struct shared_resources {
     resource::image_cache image_cache;
@@ -23,5 +25,8 @@ struct shared_resources {
 
     std::shared_ptr<shaders::crt> crt_shader = nullptr;
 };
+
+extern shared_resources resources;
+extern scene::manager scene;
 
 };

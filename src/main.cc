@@ -19,10 +19,11 @@ void load_crt_shader();
 int main() {
     const int width = 800;
     const int height = 600;
+    const int fps = 60;
 
     window = std::make_unique<raylib::Window>(width, height, "BUnknown");
     InitAudioDevice();
-    window->SetTargetFPS(60);
+    window->SetTargetFPS(fps);
 
     load_crt_shader();
 
@@ -30,7 +31,7 @@ int main() {
     global::scene.push(boot);
 
 #if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(update_draw_frame, 60, 1);
+    emscripten_set_main_loop(update_draw_frame, 0, 1);
 #else
     while (!window->ShouldClose()) {
         update_draw_frame();

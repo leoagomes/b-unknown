@@ -9,6 +9,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     set(PLATFORM Web CACHE STRING "raylib target platform" FORCE)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    # Keep all targets (including raylib) in the same threading mode.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 endif()
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
@@ -59,6 +63,14 @@ file(GLOB_RECURSE BUNKNOWN_SOURCES CONFIGURE_DEPENDS
 add_executable(BUnknown ${BUNKNOWN_SOURCES})
 target_include_directories(BUnknown PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(BUnknown PRIVATE raylib_cpp raylib imgui rlImGui EnTT::EnTT Threads::Threads)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    # Package the project data folder into the virtual FS at /data.
+    target_link_options(BUnknown PRIVATE
+        "SHELL:-sEXPORTED_RUNTIME_METHODS=HEAPF32"
+        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/data@/data"
+    )
+endif()
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE pstld "-framework IOKit" "-framework Cocoa" "-framework OpenGL")

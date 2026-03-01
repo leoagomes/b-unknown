@@ -76,20 +76,22 @@ private:
 
     // A wrapper for the parallel loading logic.
     struct parallel_loader {
-        /* These are accessible from the main thread: */
-        // total number of assets to load
-        static constexpr int total_assets = 9;
+        // names of the assets to load
         static constexpr const char* boot_sound_name = "boot";
         static constexpr const char* one_bit_input_pack_name = "1-bit-input-pack";
         static constexpr const char* one_bit_pack_name = "1-bit-pack";
         static constexpr const char* dungeon_mode_name = "dungeon-mode";
         static constexpr const char* dungeon_437_name = "dungeon-437";
         static constexpr const char* monogram_name = "monogram";
+
+        // total number of assets to load
+        static constexpr int total_assets = 9;
         // how many assets have been loaded
         std::atomic<int> progress;
         // whether the loading is done
         std::atomic<bool> done;
 
+        // the underlying thread for loading the assets
         std::thread thread;
 
         // The parallel loader just loads this data into RAM, the main thread
@@ -193,6 +195,17 @@ private:
                 32
             );
         }
+
+        void load_cpu_assets_in_background() {
+#if defined(PLATFORM_WEB)
+            // On Web, avoid blocking joins on the main loop thread.
+            load_cpu_assets();
+#else
+            if (thread.joinable())
+                thread.join();
+            thread = std::thread([this]() { load_cpu_assets(); });
+#endif
+        }
     };
 
     enum class boot_state {
@@ -245,8 +258,10 @@ public:
           loader() {}
 
     ~boot() override {
+#if !defined(PLATFORM_WEB)
         if (loader.thread.joinable())
             loader.thread.join();
+#endif
         if (render_texture_loaded)
             UnloadRenderTexture(render_texture);
     }
@@ -259,7 +274,7 @@ public:
         render_texture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
         render_texture_loaded = true;
         state = boot_state::load_cpu_assets;
-        loader.thread = std::thread([this]() { loader.load_cpu_assets(); });
+        loader.load_cpu_assets_in_background();
     }
 
     void update(float dt) override {
@@ -269,8 +284,10 @@ public:
         total_delta += dt;
         if (state == boot_state::load_cpu_assets) {
             if (loader.done.load()) {
+#if !defined(PLATFORM_WEB)
                 if (loader.thread.joinable())
                     loader.thread.join();
+#endif
                 state = boot_state::load_gpu_assets;
             }
         }

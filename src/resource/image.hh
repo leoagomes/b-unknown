@@ -8,11 +8,12 @@
 namespace resource {
 
 struct image {
-    std::string path;
+    std::string name;
     Image img;
 
-    image(const std::string &path) : path(path) {
-        img = LoadImage(path.c_str());
+    image(const std::string &name) : name(name) {
+        const auto path = TextFormat("data/images/%s.png", name.c_str());
+        img = LoadImage(path);
     }
 };
 
@@ -25,6 +26,16 @@ struct image_loader {
 };
 
 typedef entt::resource_cache<image, image_loader> image_cache;
+
+namespace images {
+
+constexpr auto one_bit_pack = entt::hashed_string{"one_bit_pack"};
+constexpr auto one_bit_input_pack = entt::hashed_string{"one_bit_input_pack"};
+constexpr auto dungeon_mode = entt::hashed_string{"dungeon_mode"};
+constexpr auto dungeon_437 = entt::hashed_string{"dungeon_437"};
+constexpr auto monogram = entt::hashed_string{"monogram"};
+
+};
 
 };
 

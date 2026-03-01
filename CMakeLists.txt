@@ -13,6 +13,7 @@ endif()
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
 add_subdirectory(vendor/raylib)
+add_subdirectory(vendor/raylib-cpp)
 add_subdirectory(vendor/entt)
 
 if(APPLE)
@@ -57,7 +58,7 @@ file(GLOB_RECURSE BUNKNOWN_SOURCES CONFIGURE_DEPENDS
 
 add_executable(BUnknown ${BUNKNOWN_SOURCES})
 target_include_directories(BUnknown PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(BUnknown PRIVATE raylib imgui rlImGui EnTT::EnTT Threads::Threads)
+target_link_libraries(BUnknown PRIVATE raylib_cpp raylib imgui rlImGui EnTT::EnTT Threads::Threads)
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE pstld "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
